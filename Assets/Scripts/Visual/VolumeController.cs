@@ -5,6 +5,9 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
 
 public class VolumeController : MonoBehaviour {
+  private static readonly int MAX_ALPHA = Shader.PropertyToID("_MaxAlpha");
+  private static readonly int TEXTURE_LERP = Shader.PropertyToID("_TextureLerp");
+
   [SerializeField]
   private Material m_material;
   
@@ -15,15 +18,17 @@ public class VolumeController : MonoBehaviour {
   private ChromaticAberration m_chromatic;
   private Material m_playerNoise;
 
-  // Settings
+  // Config
+  private Vector2 m_saturationBorders;
+  private Vector2 m_chromaticBorders;
+  private float m_lightIntensity;
+  
+  // State
   private bool m_isGrainActive;
   private bool m_isSaturationActive = true;
   private bool m_isChromaticActive;
   private bool m_applyShader;
   private bool m_isSceneExposed = true;
-  private Vector2 m_saturationBorders;
-  private Vector2 m_chromaticBorders;
-  private float m_lightIntensity;
   private float m_shaderScale = 1;
 
   void Start() {
@@ -49,15 +54,23 @@ public class VolumeController : MonoBehaviour {
   }
 
   private void Update() {
-    m_grain.intensity.value = Mathf.Lerp(m_grain.intensity.value, m_isGrainActive ? 1 : 0, 0.1f);
-    m_playerNoise.SetFloat("_MaxAlpha", m_grain.intensity.value);
+    // Lerp values
+    float newGrain = Mathf.Lerp(m_grain.intensity.value, m_isGrainActive ? 1 : 0, 0.1f);
+    float newSaturation = Mathf.Lerp(m_color.saturation.value, m_isSaturationActive ? m_saturationBorders.y : m_saturationBorders.x, 0.1f);
+    float newChromatic = Mathf.Lerp(m_chromatic.intensity.value, m_isChromaticActive ? m_chromaticBorders.y : m_chromaticBorders.x, 0.05f);
+    float newExposure = Mathf.Lerp(m_color.postExposure.value, m_isSceneExposed ? m_lightIntensity : -10, 0.1f);
+    float newShaderScale = Mathf.Lerp(m_shaderScale, (m_applyShader ? 0f : 1f), 0.02f);
+    
+    // Update volume
+    m_color.saturation.value = newSaturation;
+    m_chromatic.intensity.value = newChromatic;
+    m_color.postExposure.value = newExposure;
+    m_grain.intensity.value = newGrain;
+    m_shaderScale = newShaderScale;
 
-    m_color.saturation.value = (Mathf.Lerp(m_color.saturation.value, m_isSaturationActive ? m_saturationBorders.y : m_saturationBorders.x, 0.1f));
-    m_chromatic.intensity.value = (Mathf.Lerp(m_chromatic.intensity.value, m_isChromaticActive ? m_chromaticBorders.y : m_chromaticBorders.x, 0.05f));
-
-    m_color.postExposure.value = (Mathf.Lerp(m_color.postExposure.value, m_isSceneExposed ? m_lightIntensity : -10, 0.1f));
-    m_shaderScale = Mathf.Lerp(m_shaderScale, (m_applyShader ? 0f : 1f), 0.02f);
-    m_material.SetFloat("_TextureLerp", m_shaderScale);
+    // Update shader
+    m_playerNoise.SetFloat(MAX_ALPHA, newGrain);
+    m_material.SetFloat(TEXTURE_LERP, newShaderScale);
   }
   
   private void HandleTimeManagerStateChanged(TimeManager.StateChangedEventData data) {
