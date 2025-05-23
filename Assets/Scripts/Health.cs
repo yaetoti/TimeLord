@@ -127,17 +127,6 @@ public class Health : RewindableComponent {
     }
   }
 
-  private void FixedUpdate() {
-    // Add snapshots
-    if (TimeManager.Instance.CurrentState is TimeManager.State.WAITING) {
-      if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
-        m_snapshots.RemoveAt(m_snapshots.Count - 1);
-      }
-      
-      m_snapshots.Insert(0, new State(m_state.maxHealth, m_state.health, m_state.transitionTime, m_state.transitionTimeCurrent, m_state.state));
-    }
-  }
-
   public void ReduceHealth(int amount) {
     if (amount <= 0 || m_state.health <= 0) {
       return;
@@ -220,7 +209,22 @@ public class Health : RewindableComponent {
     if (data.CurrentState is TimeManager.State.WAITING) {
     }
   }
-  
+
+  public override void OnRewindUpdate() {
+    base.OnRewindUpdate();
+
+    if (!gameObject.activeSelf) {
+      return;
+    }
+    
+    // Add snapshots
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+      m_snapshots.RemoveAt(m_snapshots.Count - 1);
+    }
+    
+    m_snapshots.Insert(0, new State(m_state.maxHealth, m_state.health, m_state.transitionTime, m_state.transitionTimeCurrent, m_state.state));
+  }
+
   public override void OnRewindStep(TimeManager.StepEventData data) {
     base.OnRewindStep(data);
 

@@ -41,13 +41,13 @@ public class TimeManager : MonoBehaviour {
 
   // Events
   private UnityEvent m_rewindUpdateEvent;
-  private UnityEvent m_rewindStartEvent;
-  private UnityEvent m_rewindStopEvent;
+  private UnityEvent m_rewindStartEvent; // TODO remove
+  private UnityEvent m_rewindStopEvent; // TODO remove
   private UnityEvent<StepEventData> m_rewindStepEvent;
   private UnityEvent<StateChangedEventData> m_stateChangedEvent;
   
   // State
-  private State m_state;
+  private State m_state = State.WAITING;
   private float m_timeSlowingProgress;
   private float m_rewindTime;
   private int m_bufferTicks;
@@ -60,7 +60,6 @@ public class TimeManager : MonoBehaviour {
   private void Awake() {
     Initialize();
     m_mana = m_manaMax;
-    m_state = State.WAITING;
     
     // Events
     m_rewindUpdateEvent = new UnityEvent();
@@ -215,13 +214,6 @@ public class TimeManager : MonoBehaviour {
         break;
       }
     }
-  }
-
-  private void FixedUpdate() {
-    // TODO NEW ??? What about step ???
-    // if (m_state != State.REWINDING && m_bufferTicks < m_bufferSizeMax) {
-    //   ++m_bufferTicks;
-    // }
   }
 
   public void Register(IRewindableComponent component) {

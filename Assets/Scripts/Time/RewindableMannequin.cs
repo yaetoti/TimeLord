@@ -40,25 +40,14 @@ public class RewindableMannequin : RewindableComponent {
   }
 
   protected void Update() {
-    if (TimeManager.Instance.CurrentState is not TimeManager.State.WAITING) {
+    if (TimeManager.Instance.CurrentState is TimeManager.State.REWINDING) {
       if (m_snapshots.Count == 0) {
         return;
       }
       
       m_rewindTime += Time.unscaledDeltaTime;
-      transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].Position, Mathf.Clamp01(m_rewindTime / 0.02f));
-      transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].Rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
-    }
-  }
-
-
-  private void FixedUpdate() {
-    if (TimeManager.Instance.CurrentState is TimeManager.State.WAITING) {
-      if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
-        m_snapshots.RemoveAt(m_snapshots.Count - 1);
-      }
-
-      m_snapshots.Insert(0, new PointInTimeWithHealth(transform.position, new Vector2(0, 0), transform.rotation, m_health.CurrentState.health));
+      // transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].Position, Mathf.Clamp01(m_rewindTime / 0.02f));
+      // transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].Rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
     }
   }
 
@@ -80,6 +69,20 @@ public class RewindableMannequin : RewindableComponent {
     m_animator.updateMode = AnimatorUpdateMode.Normal;
   }
 
+  public override void OnRewindUpdate() {
+    base.OnRewindUpdate();
+    
+    if (!gameObject.activeSelf) {
+      return;
+    }
+    
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+      m_snapshots.RemoveAt(m_snapshots.Count - 1);
+    }
+
+    m_snapshots.Insert(0, new PointInTimeWithHealth(transform.position, new Vector2(0, 0), transform.rotation, m_health.CurrentState.health));
+  }
+  
   public override void OnRewindStep(TimeManager.StepEventData data) {
     base.OnRewindStep(data);
     
@@ -88,15 +91,15 @@ public class RewindableMannequin : RewindableComponent {
     }
     
     m_rewindTime = 0.0f;
-    transform.position = m_snapshots[0].Position;
-    m_lastPosition = m_snapshots[0].Position;
-    m_lastRotation = m_snapshots[0].Rotation;
+    // transform.position = m_snapshots[0].Position;
+    // m_lastPosition = m_snapshots[0].Position;
+    // m_lastRotation = m_snapshots[0].Rotation;
     
     // Check health
     m_nextHealthState = m_healthState;
     m_healthState = m_health.CurrentState.state;
     if (m_nextHealthState != m_healthState) {
-      //Debug.Log($"Current: {m_healthState}, Next: {m_nextHealthState}");
+      Debug.Log($"Current: {m_healthState}, Next: {m_nextHealthState}");
     }
     
     if (tag.Equals("Enemy") && m_healthState is Health.TransitionState.DYING && m_nextHealthState is Health.TransitionState.DEAD) {

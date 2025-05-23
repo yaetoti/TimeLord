@@ -85,7 +85,7 @@ Material:
     - _ScanlineHeight: 10
     - _ScanlineStrength: 0.5
     - _StaticStrength: 0.1
-    - _TextureLerp: 0.9995077
+    - _TextureLerp: 0.9999985
     - _UnscaledTime: 10.220037
     m_Colors:
     - _CRTWarpStrength: {r: 1, g: 1, b: 0, a: 0}
