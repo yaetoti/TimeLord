@@ -4,18 +4,16 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
 
+// Per-level singleton
 public class LevelDirector : MonoBehaviour {
-  public static LevelDirector Instance => m_instance;
-  private static LevelDirector m_instance;
-  
-  private VolumeController m_volume;
+  public static LevelDirector Instance { get; private set; }
 
   [SerializeField] private bool m_killAll;
-
+  
+  private VolumeController m_volume;
   private int m_enemyCount;
-
   private bool m_isEnteringScene;
-
+  
   private void Awake() {
     Initialize();
   }
@@ -27,22 +25,22 @@ public class LevelDirector : MonoBehaviour {
   }
 
   private void OnDestroy() {
-    if (m_instance == this) {
-      m_instance = null;
+    if (Instance == this) {
+      Instance = null;
     }
   }
 
   private void Initialize() {
-    if (m_instance == this) {
+    if (Instance == this) {
       return;
     }
     
-    if (m_instance is not null) {
+    if (Instance is not null) {
       Destroy(this);
       return;
     }
 
-    m_instance = this;
+    Instance = this;
   }
 
   private void Start() {
@@ -60,10 +58,15 @@ public class LevelDirector : MonoBehaviour {
 
   private IEnumerator IEChangeScene(string sceneName) {
     //m_volume.SwitchActive();
+    // Pre-load
     InputHolder.Instance.MasterInput.Disable();
     TimeManager.Instance.ForceResetRewind();
+    
+    // Load
     yield return new WaitForSeconds(0.3f);
     SceneManager.LoadScene(sceneName);
+    
+    // Post-load
     InputHolder.Instance.MasterInput.Enable();
   }
 

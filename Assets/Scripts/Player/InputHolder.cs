@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Per-application singleton
 public class InputHolder : MonoBehaviour {
   public static InputHolder Instance { get; private set; }
 

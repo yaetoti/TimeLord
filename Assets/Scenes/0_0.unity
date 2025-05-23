@@ -14300,6 +14300,10 @@ PrefabInstance:
       propertyPath: m_canClose
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
+      propertyPath: m_linkedLevel
+      value: 0_1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3942207192261111348, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
     m_RemovedGameObjects: []
@@ -16785,6 +16789,10 @@ PrefabInstance:
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_canClose
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
+      propertyPath: m_linkedLevel
+      value: 0_1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3942207192261111348, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}

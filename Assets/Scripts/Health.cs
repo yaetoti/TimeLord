@@ -25,12 +25,8 @@ public class Health : MonoBehaviour {
   [SerializeField]
   private ParticleSystem m_damageFX;
 
-  //Directors variables
-  private LevelDirector m_levelDirector;
-
   void Start() {
     m_shieldUp = false;
-    m_levelDirector = FindObjectOfType<LevelDirector>();
 
     if (tag.Equals("Player") && !DataStash.Instance.m_firstRun) {
       m_health = DataStash.Instance.m_health;
@@ -69,7 +65,7 @@ public class Health : MonoBehaviour {
       m_isDead = true;
 
       //Animation script
-      if(m_currentHealth == 0)
+      //if(m_currentHealth == 0)
       Die();
     } else {
       m_isDead = false;
@@ -87,9 +83,9 @@ public class Health : MonoBehaviour {
       m_isDead = true;
 
       //Animation script
-      if (m_currentHealth == 0) {
+      //if (m_currentHealth == 0) {
         Die();
-      }
+      //}
     }
   }
 
@@ -108,7 +104,7 @@ public class Health : MonoBehaviour {
   }
   private void Die() 
   {
-    m_levelDirector.IAmDead(transform.tag);
+    LevelDirector.Instance.IAmDead(transform.tag);
     if (transform.tag != "Player")
     {
       transform.GetComponent<CapsuleCollider2D>().enabled = false;

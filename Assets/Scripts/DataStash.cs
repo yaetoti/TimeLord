@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Per-application singleton
 public class DataStash : MonoBehaviour {
   public static DataStash Instance { get; private set; }
 
@@ -24,9 +25,5 @@ public class DataStash : MonoBehaviour {
     Instance = this;
     m_firstRun = true;
     DontDestroyOnLoad(this);
-  }
-
-  private void Start() {
-
   }
 }
