@@ -7,12 +7,12 @@ public class DoorBeinUsed : MonoBehaviour
 
   private string m_linkedScene;
 
-  private Director m_director;
+  private LevelDirector m_levelDirector;
 
   private void Start()
   {
     m_linkedScene = transform.parent.GetComponent<DoorController>().LinkedLevel;
-    m_director = FindObjectOfType<Director>();
+    m_levelDirector = FindObjectOfType<LevelDirector>();
   }
 
   private void OnTriggerEnter2D(Collider2D collision)
@@ -20,7 +20,7 @@ public class DoorBeinUsed : MonoBehaviour
     
     if (collision.tag == "Player") 
     {
-    m_director.ChangeScene(m_linkedScene);
+    m_levelDirector.ChangeScene(m_linkedScene);
     }
   }
 }

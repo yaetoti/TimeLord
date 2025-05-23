@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering;
 
-public class Director : MonoBehaviour {
-  public static Director Instance => m_instance;
-  private static Director m_instance;
+public class LevelDirector : MonoBehaviour {
+  public static LevelDirector Instance => m_instance;
+  private static LevelDirector m_instance;
   
   private VolumeController m_volume;
 
@@ -19,8 +19,24 @@ public class Director : MonoBehaviour {
   private void Awake() {
     Initialize();
   }
-  
+
+  private void OnEnable() {
+#if UNITY_EDITOR
+    Initialize();
+#endif
+  }
+
+  private void OnDestroy() {
+    if (m_instance == this) {
+      m_instance = null;
+    }
+  }
+
   private void Initialize() {
+    if (m_instance == this) {
+      return;
+    }
+    
     if (m_instance is not null) {
       Destroy(this);
       return;
@@ -48,6 +64,7 @@ public class Director : MonoBehaviour {
     TimeManager.Instance.ForceResetRewind();
     yield return new WaitForSeconds(0.3f);
     SceneManager.LoadScene(sceneName);
+    InputHolder.Instance.MasterInput.Enable();
   }
 
   private void OpenDoors() {

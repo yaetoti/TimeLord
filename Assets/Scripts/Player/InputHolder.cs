@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class InputHolder : MonoBehaviour {
-  public static InputHolder Instance => m_instance;
+  public static InputHolder Instance { get; private set; }
 
-  public MasterInput MasterInput => m_masterInput;
-
-  private static InputHolder m_instance;
-
-  private MasterInput m_masterInput;
+  public MasterInput MasterInput { get; private set; }
 
   private void Awake() {
     Initialize();
@@ -17,25 +13,28 @@ public class InputHolder : MonoBehaviour {
 
   private void OnEnable() {
 #if UNITY_EDITOR
-    if (m_instance != this) {
-      Initialize();
-    }
+    Initialize();
 #endif
-    m_masterInput.Enable();
+    MasterInput.Enable();
   }
 
 
   private void OnDisable() {
-    m_masterInput?.Disable();
+    MasterInput?.Disable();
   }
 
   private void Initialize() {
-    if (m_instance is not null) {
+    if (Instance == this) {
+      return;
+    }
+    
+    if (Instance is not null) {
       Destroy(this);
       return;
     }
 
-    m_instance = this;
-    m_masterInput = new MasterInput();
+    Instance = this;
+    MasterInput = new MasterInput();
+    DontDestroyOnLoad(this);
   }
 }
