@@ -63,7 +63,6 @@ public class RewindableArrow : RewindableComponent {
     base.OnRewindUpdate();
 
     if (!gameObject.activeSelf) {
-      Debug.Log("DISABLED");
       return;
     }
     

@@ -12,6 +12,16 @@ public class DataStash : MonoBehaviour {
   public ApplicationData m_data;
   
   private void Awake() {
+    Initialize();
+  }
+
+  private void OnEnable() {
+#if UNITY_EDITOR
+    Initialize();
+#endif
+  }
+
+  private void Initialize() {
     if (Instance == this) {
       return;
     }
@@ -27,6 +37,5 @@ public class DataStash : MonoBehaviour {
 
   private void Start() {
     m_data = new ApplicationData();
-    
   }
 }

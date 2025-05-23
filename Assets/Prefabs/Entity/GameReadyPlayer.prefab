@@ -409,9 +409,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_damageFX: {fileID: 7543388019760856441, guid: c5c239599166e92469ddfdb49a3ad2ef, type: 3}
   m_state:
-    maxHealth: 1
-    health: 1
-    transitionTime: 1
+    maxHealth: 3
+    health: 3
+    transitionTime: 0.1
     transitionTimeCurrent: 0
     state: 0
 --- !u!114 &3626809204863420159
