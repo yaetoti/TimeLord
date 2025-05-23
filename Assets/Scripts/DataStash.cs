@@ -7,9 +7,9 @@ using UnityEngine;
 public class DataStash : MonoBehaviour {
   public static DataStash Instance { get; private set; }
 
+  public int m_maxHealth = 3;
   public int m_health = 3;
-  public int m_currentHealth = 3;
-  public bool m_isDead = false;
+  public ApplicationData m_data;
   
   private void Awake() {
     if (Instance == this) {
@@ -23,5 +23,10 @@ public class DataStash : MonoBehaviour {
     
     Instance = this;
     DontDestroyOnLoad(this);
+  }
+
+  private void Start() {
+    m_data = new ApplicationData();
+    
   }
 }

@@ -407,8 +407,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 541284e7c9b0b284e86a67cb84455c53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_health: 3
   m_damageFX: {fileID: 7543388019760856441, guid: c5c239599166e92469ddfdb49a3ad2ef, type: 3}
+  m_state:
+    maxHealth: 1
+    health: 1
+    transitionTime: 1
+    transitionTimeCurrent: 0
+    state: 0
 --- !u!114 &3626809204863420159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -543,7 +548,7 @@ GameObject:
   - component: {fileID: 5177032782168101362}
   - component: {fileID: 8202284347830051936}
   m_Layer: 0
-  m_Name: Square
+  m_Name: Rewind effect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

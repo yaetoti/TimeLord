@@ -5,15 +5,16 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
+// Per-level singleton
 public class TimeManager : MonoBehaviour {
   public enum State {
     WAITING,
-    SLOWING_TIME,
+    SLOWING_DOWN,
     REWINDING,
-    SPEEDING_UP_TIME
+    SPEEDING_UP
   }
   
-  public class StateChangedEventData {
+  public sealed class StateChangedEventData {
     public State PreviousState { get; private set; }
     public State CurrentState { get; private set; }
 
@@ -23,99 +24,100 @@ public class TimeManager : MonoBehaviour {
     }
   }
 
-  public static TimeManager Instance => m_instance;
+  public sealed class StepEventData {
+    public StepEventData() {
+    }
+  }
 
-  private static TimeManager m_instance;
+  public static TimeManager Instance { get; private set; }
 
-  public int BufferTicks => m_bufferTicks;
-  public float TimeSlowingLength => m_timeSlowingLength;
+  public State CurrentState => m_state;
+  public int BufferSizeMax => m_bufferSizeMax;
 
-
-  [SerializeField] [Min(0)] private int m_bufferTicks = 500;
-  [SerializeField] [Min(0)] private float m_timeSlowingLength = 2;
-  [SerializeField] [Min(0)] private int m_mana = 750;
-  [SerializeField] private ScriptableRendererFeature m_rendererData;
+  [SerializeField] [Min(0)] private int m_bufferSizeMax = 500;
+  [SerializeField] [Min(0)] private float m_timeSlowingLength = 0.5f;
+  [SerializeField] [Min(0)] private int m_manaMax = 2000;
 
   // Events
   private UnityEvent m_rewindStartEvent;
   private UnityEvent m_rewindStopEvent;
-  private UnityEvent m_rewindStepEvent;
+  private UnityEvent<StepEventData> m_rewindStepEvent;
   private UnityEvent<StateChangedEventData> m_stateChangedEvent;
   
   private State m_state;
-  private float m_timeSlowingCurrent;
+  private float m_timeSlowingProgress;
   private float m_rewindTime;
-  private int m_bufferTicksCurrent;
-  private int m_manaCurrent;
+  private int m_bufferTicks;
+  private int m_mana;
 
   private void Awake() {
     Initialize();
-    m_manaCurrent = m_mana;
+    m_mana = m_manaMax;
     m_state = State.WAITING;
     
     // Events
     m_stateChangedEvent = new UnityEvent<StateChangedEventData>();
     m_rewindStartEvent = new UnityEvent();
     m_rewindStopEvent = new UnityEvent();
-    m_rewindStepEvent = new UnityEvent();
+    m_rewindStepEvent = new UnityEvent<StepEventData>();
   }
 
   private void OnEnable() {
 #if UNITY_EDITOR
-    if (m_instance != this) {
-      Initialize();
-    }
+    Initialize();
 #endif
+  }
+  
+  private void OnDestroy() {
+    if (Instance != this) {
+      return;
+    }
+    
+    Instance = null;
+    ForceResetRewind();
   }
 
   private void Initialize() {
-    if (m_instance is not null) {
+    if (Instance == this) {
+      return;
+    }
+    
+    if (Instance is not null) {
       Destroy(this);
       return;
     }
 
-    m_instance = this;
+    Instance = this;
   }
 
   public void ForceResetRewind() {
     if (m_state != State.WAITING) {
       Time.timeScale = 1;
-      //m_rendererData.SetActive(false);
       m_rewindStopEvent.Invoke();
       m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.WAITING));
       m_state = State.WAITING;
     }
   }
 
-  private void OnDestroy() {
-    if (m_instance != this) {
-      return;
-    }
-    
-    m_instance = null;
-    ForceResetRewind();
-  }
-
-  void Update() {
+  private void Update() {
     // Processing
     switch (m_state) {
-    case State.SLOWING_TIME:
-      m_timeSlowingCurrent -= Time.unscaledDeltaTime;
-      Time.timeScale = Mathf.Clamp01(m_timeSlowingCurrent / m_timeSlowingLength);
+    case State.SLOWING_DOWN:
+      m_timeSlowingProgress -= Time.unscaledDeltaTime;
+      Time.timeScale = Mathf.Clamp01(m_timeSlowingProgress / m_timeSlowingLength);
       Time.fixedDeltaTime = 0.02f * Time.timeScale;
-      if (m_timeSlowingCurrent <= 0) {
+      if (m_timeSlowingProgress <= 0) {
         m_rewindStartEvent.Invoke();
         m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.REWINDING));
         m_state = State.REWINDING;
       }
 
       break;
-    case State.SPEEDING_UP_TIME:
-      m_timeSlowingCurrent += Time.unscaledDeltaTime;
-      Time.timeScale = Mathf.Clamp01(m_timeSlowingCurrent / m_timeSlowingLength);
+    case State.SPEEDING_UP:
+      m_timeSlowingProgress += Time.unscaledDeltaTime;
+      Time.timeScale = Mathf.Clamp01(m_timeSlowingProgress / m_timeSlowingLength);
       Time.fixedDeltaTime = Time.timeScale * 0.02f;
-      if (m_timeSlowingCurrent >= m_timeSlowingLength) {
-        //m_rendererData.SetActive(false);
+      if (m_timeSlowingProgress >= m_timeSlowingLength) {
         m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.WAITING));
         m_state = State.WAITING;
       }
@@ -126,15 +128,15 @@ public class TimeManager : MonoBehaviour {
       if (m_rewindTime > 0.02f) {
         // TODO: fixedStep
         m_rewindTime -= 0.02f;
-        --m_bufferTicksCurrent;
-        --m_manaCurrent;
-        m_rewindStepEvent.Invoke();
+        --m_bufferTicks;
+        --m_mana;
+        m_rewindStepEvent.Invoke(new StepEventData());
       }
 
-      if (m_bufferTicksCurrent <= 0 || m_manaCurrent <= 0) {
+      if (m_bufferTicks <= 0 || m_mana <= 0) {
         m_rewindStopEvent.Invoke();
-        m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SPEEDING_UP_TIME));
-        m_state = State.SPEEDING_UP_TIME;
+        m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SPEEDING_UP));
+        m_state = State.SPEEDING_UP;
       }
 
       break;
@@ -143,35 +145,53 @@ public class TimeManager : MonoBehaviour {
     }
 
     // Input
+    HandleInput();
+  }
+
+  private void HandleInput() {
     if (InputHolder.Instance.MasterInput.Player.TimeRewind.WasPressedThisFrame()) {
       switch (m_state) {
       case State.WAITING:
-        if (m_manaCurrent > 0) {
-          //m_rendererData.SetActive(true);
-          m_timeSlowingCurrent = m_timeSlowingLength;
-          m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SLOWING_TIME));
-          m_state = State.SLOWING_TIME;
+        if (m_mana > 0) {
+          m_timeSlowingProgress = m_timeSlowingLength;
+          m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SLOWING_DOWN));
+          m_state = State.SLOWING_DOWN;
         }
 
         break;
-      case State.SLOWING_TIME:
-        m_state = State.SPEEDING_UP_TIME;
+      case State.SLOWING_DOWN:
+        m_state = State.SPEEDING_UP;
         break;
       case State.REWINDING:
-        m_rewindStopEvent.Invoke(); // Invoke callbacks before changing state to make it possible to get previous state from methods
-        m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SPEEDING_UP_TIME));
-        m_state = State.SPEEDING_UP_TIME;
+        m_rewindStopEvent.Invoke();
+        m_stateChangedEvent.Invoke(new StateChangedEventData(m_state, State.SPEEDING_UP));
+        m_state = State.SPEEDING_UP;
         break;
-      case State.SPEEDING_UP_TIME:
+      case State.SPEEDING_UP:
         break;
       }
     }
   }
 
   private void FixedUpdate() {
-    if (m_state != State.REWINDING && m_bufferTicksCurrent < m_bufferTicks) {
-      ++m_bufferTicksCurrent;
+    // TODO NEW ??? What about step ???
+    if (m_state != State.REWINDING && m_bufferTicks < m_bufferSizeMax) {
+      ++m_bufferTicks;
     }
+  }
+
+  public void Register(IRewindableComponent component) {
+    RegisterStateChangedEvent(component.OnRewindStateChanged);
+    RegisterRewindStartEvent(component.OnRewindStart);
+    RegisterRewindStopEvent(component.OnRewindStop);
+    RegisterRewindStepEvent(component.OnRewindStep);
+  }
+
+  public void Unregister(IRewindableComponent component) {
+    UnregisterStateChangedEvent(component.OnRewindStateChanged);
+    UnregisterRewindStartEvent(component.OnRewindStart);
+    UnregisterRewindStopEvent(component.OnRewindStop);
+    UnregisterRewindStepEvent(component.OnRewindStep);
   }
   
   public void RegisterStateChangedEvent(UnityAction<StateChangedEventData> callback) {
@@ -198,11 +218,11 @@ public class TimeManager : MonoBehaviour {
     m_rewindStopEvent.RemoveListener(callback);
   }
 
-  public void RegisterRewindStepEvent(UnityAction callback) {
+  public void RegisterRewindStepEvent(UnityAction<StepEventData> callback) {
     m_rewindStepEvent.AddListener(callback);
   }
   
-  public void UnregisterRewindStepEvent(UnityAction callback) {
+  public void UnregisterRewindStepEvent(UnityAction<StepEventData> callback) {
     m_rewindStepEvent.RemoveListener(callback);
   }
 }

@@ -9,7 +9,7 @@ public class DamageDealer : MonoBehaviour
     if (collision.tag == "Player") 
     {
       Debug.Log("Player damaged");
-      collision.GetComponent<Health>().Damage(1);
+      collision.GetComponent<Health>().ReduceHealth(1);
       collision.GetComponent<DamageImpact>().Damage(transform.position);
     }
   }

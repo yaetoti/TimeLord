@@ -3,75 +3,93 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(1)]
-public class RewindableWithHealth : Rewindable {
+public class RewindableWithHealth : RewindableComponent {
+  // Components
   private Rigidbody2D m_rigidbody;
   private Health m_health;
-  private List<PointInTimeWithHealth> m_timePoints;
-  private bool m_isRewinding;
 
+  // State
   private float m_rewindTime;
   private Vector2 m_lastPosition;
   private Quaternion m_lastRotation;
+  private List<PointInTimeWithHealth> m_snapshots;
 
   protected override void Start() {
     base.Start();
     m_rigidbody = GetComponent<Rigidbody2D>();
     m_health = GetComponent<Health>();
-    m_isRewinding = false;
   }
 
   private void OnEnable() {
-    m_timePoints = new List<PointInTimeWithHealth>();
+    m_snapshots = new List<PointInTimeWithHealth>();
   }
 
   protected void Update() {
-    if (m_isRewinding) { // crutch - m_timePoints.Count > 0.
+    if (TimeManager.Instance.CurrentState is not TimeManager.State.WAITING) {
+      if (m_snapshots.Count == 0) {
+        return;
+      }
+      
+      // TODO time must be smaller when speeding up or slowing down
       m_rewindTime += Time.unscaledDeltaTime;
-      transform.position = Vector2.Lerp(m_lastPosition, m_timePoints[0].Position, Mathf.Clamp01(m_rewindTime / 0.02f));
-      transform.rotation = Quaternion.Lerp(m_lastRotation, m_timePoints[0].Rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
+      transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].Position, Mathf.Clamp01(m_rewindTime / 0.02f));
+      transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].Rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
     }
   }
 
   private void FixedUpdate() {
-    if (!m_isRewinding) {
-      if (m_timePoints.Count > TimeManager.Instance.BufferTicks) {
-        m_timePoints.RemoveAt(m_timePoints.Count - 1);
+    if (TimeManager.Instance.CurrentState is TimeManager.State.WAITING) {
+      if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+        m_snapshots.RemoveAt(m_snapshots.Count - 1);
       }
-      m_timePoints.Insert(0, new PointInTimeWithHealth(transform.position, m_rigidbody.linearVelocity, transform.rotation, m_health.CurrentHealth));
+
+      m_snapshots.Insert(0, new PointInTimeWithHealth(transform.position, m_rigidbody.linearVelocity, transform.rotation, m_health.CurrentState.health));
     }
   }
 
-  protected override void RewindStartHandler() {
-    base.RewindStartHandler();
-    m_isRewinding = true;
+  public override void OnRewindStart() {
+    base.OnRewindStart();
     m_rigidbody.bodyType = RigidbodyType2D.Kinematic;
     m_rigidbody.simulated = false;
 
     m_rewindTime = 0f;
-    m_lastPosition = m_timePoints[0].Position;
-    m_lastRotation = m_timePoints[0].Rotation;
+    m_lastPosition = m_snapshots[0].Position;
+    m_lastRotation = m_snapshots[0].Rotation;
   }
 
-  protected override void RewindStopHandler() {
-    base.RewindStopHandler();
-    m_isRewinding = false;
+  public override void OnRewindStop() {
+    base.OnRewindStop();
+    // TODO don't touch velocity, create camera rewind controller instead
     m_rigidbody.linearVelocity = -m_rigidbody.linearVelocity; // TODO ???
     m_rigidbody.bodyType = RigidbodyType2D.Dynamic;
     m_rigidbody.simulated = true;
   }
 
-  protected override void RewindStepHandler() {
-    base.RewindStepHandler();
-    m_rewindTime -= 0.02f;
-    transform.position = m_timePoints[0].Position;
-    m_rigidbody.linearVelocity = -m_timePoints[0].Velocity;
-    m_rigidbody.position = m_timePoints[0].Position;
-    m_lastPosition = m_timePoints[0].Position;
-    m_lastRotation = m_timePoints[0].Rotation;
-    if (tag.Equals("Entity") && m_health.CurrentHealth <= 0 && m_timePoints[0].Health > 0) {
+  public override void OnRewindStep(TimeManager.StepEventData data) {
+    base.OnRewindStep(data);
+    
+    if (m_snapshots.Count == 0) {
+      return;
+    }
+    
+    // m_rewindTime -= 0.02f;
+    m_rewindTime = 0.0f;
+    
+    // Restore state
+    transform.position = m_snapshots[0].Position;
+    transform.rotation = m_snapshots[0].Rotation;
+    m_rigidbody.linearVelocity = -m_snapshots[0].Velocity;
+    m_rigidbody.position = m_snapshots[0].Position;
+    
+    // Store previous state
+    m_lastPosition = m_snapshots[0].Position;
+    m_lastRotation = m_snapshots[0].Rotation;
+    
+    if (tag.Equals("Entity") && m_health.CurrentState.health <= 0 && m_snapshots[0].Health > 0) {
       GetComponent<Animator>().SetTrigger("Res");
     }
-    m_health.ForceSet(m_timePoints[0].Health);
-    m_timePoints.RemoveAt(0);
+
+    m_health.SetHealth(m_snapshots[0].Health);
+    m_snapshots.RemoveAt(0);
   }
 }

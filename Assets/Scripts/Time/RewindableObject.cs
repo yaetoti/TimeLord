@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(1)]
-public class RewindableObject : Rewindable {
+public class RewindableObject : RewindableComponent {
   private Rigidbody2D m_rigidbody;
   private List<PointInTime> m_timePoints;
   private bool m_isRewinding;
@@ -29,15 +29,15 @@ public class RewindableObject : Rewindable {
 
   private void FixedUpdate() {
     if (!m_isRewinding) {
-      if (m_timePoints.Count > TimeManager.Instance.BufferTicks) {
+      if (m_timePoints.Count > TimeManager.Instance.BufferSizeMax) {
         m_timePoints.RemoveAt(m_timePoints.Count - 1);
       }
       m_timePoints.Insert(0, new PointInTime(transform.position, m_rigidbody.linearVelocity, transform.rotation));
     }
   }
 
-  protected override void RewindStartHandler() {
-    base.RewindStartHandler();
+  public override void OnRewindStart() {
+    base.OnRewindStart();
     m_isRewinding = true;
     m_rigidbody.bodyType = RigidbodyType2D.Kinematic;
     m_rigidbody.simulated = false;
@@ -47,16 +47,16 @@ public class RewindableObject : Rewindable {
     m_lastRotation = m_timePoints[0].Rotation;
   }
 
-  protected override void RewindStopHandler() {
-    base.RewindStopHandler();
+  public override void OnRewindStop() {
+    base.OnRewindStop();
     m_isRewinding = false;
     m_rigidbody.linearVelocity = -m_rigidbody.linearVelocity; // TODO ???
     m_rigidbody.bodyType = RigidbodyType2D.Dynamic;
     m_rigidbody.simulated = true;
   }
 
-  protected override void RewindStepHandler() {
-    base.RewindStepHandler();
+  public override void OnRewindStep(TimeManager.StepEventData data) {
+    base.OnRewindStep(data);
     m_rewindTime -= 0.02f;
     transform.position = m_timePoints[0].Position;
     m_rigidbody.linearVelocity = -m_timePoints[0].Velocity;

@@ -77,7 +77,7 @@ public class PlayerWeapon : MonoBehaviour {
         Vector2 offset = new Vector2(m_isFacingRight ? m_meleeOffsetX : -m_meleeOffsetX, m_meleeOffsetY);
         Collider2D[] enemies = Physics2D.OverlapCircleAll(m_entityRigidbody.position + offset, m_meleeRadius, 1 << LayerMask.NameToLayer("Enemy"));
         foreach (Collider2D enemy in enemies) {
-          enemy.GetComponent<Health>().Damage(1);
+          enemy.GetComponent<Health>().ReduceHealth(1);
         }
       } else if (m_weaponType == WeaponType.CROSSBOW && m_crossbowReloadCurrent == 0) {
         //Animation script
