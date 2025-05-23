@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86218257981d3a246a3b1abe052713ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LinkedLevel: 0_1
+  m_linkedLevel: 
   m_canOpen: 1
   m_canClose: 1
   m_isOpen: 0

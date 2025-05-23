@@ -9047,7 +9047,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1186016299}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9112,7 +9112,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor
+      value: Exit door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_isOpen
@@ -9302,7 +9302,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1481931405}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9371,7 +9371,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor (1)
+      value: Entrance door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_canOpen

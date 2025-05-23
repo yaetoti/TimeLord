@@ -239,7 +239,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor (1)
+      value: Entrance door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_canOpen
@@ -11997,7 +11997,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958516856}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12099,7 +12099,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2407035900331757688, guid: a8f350a87066c004092ed557ef50f986, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.911727
+      value: -4.13
       objectReference: {fileID: 0}
     - target: {fileID: 2407035900331757688, guid: a8f350a87066c004092ed557ef50f986, type: 3}
       propertyPath: m_LocalPosition.z
@@ -12286,7 +12286,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor
+      value: Exit door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: LinkedLevel
@@ -12545,7 +12545,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1458177434}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14269,7 +14269,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910602809}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -6}
+  m_LocalPosition: {x: 0, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

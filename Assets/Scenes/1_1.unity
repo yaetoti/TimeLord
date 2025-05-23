@@ -23855,7 +23855,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor (1)
+      value: Entrance door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_canOpen
@@ -24484,7 +24484,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4915328428911397187, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: m_Name
-      value: Dooor
+      value: Exit door
       objectReference: {fileID: 0}
     - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
       propertyPath: LinkedLevel

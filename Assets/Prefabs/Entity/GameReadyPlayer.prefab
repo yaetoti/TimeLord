@@ -381,7 +381,7 @@ MonoBehaviour:
   m_heartDistance: 4
   m_offsetX: 12
   m_offsetY: 12
-  m_heartScale: 0.8
+  m_heartScale: 1.5
 --- !u!114 &6430071358996936359
 MonoBehaviour:
   m_ObjectHideFlags: 0

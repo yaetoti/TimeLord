@@ -14165,7 +14165,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Lead developer: <color="red">Artem Yaetoti'
+  m_text: 'LeaD Developer: <color="red">Artem yaetoti___'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
   m_sharedMaterial: {fileID: 138064162993543494, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
@@ -16017,7 +16017,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: THanks for Playing demo!
+  m_text: Thanks for playing Demo!
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
   m_sharedMaterial: {fileID: 138064162993543494, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
@@ -16193,7 +16193,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: YOu are not supposed to be here
+  m_text: YOu are not supposed to Be here
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
   m_sharedMaterial: {fileID: 138064162993543494, guid: 7e3900c67f4bb2844952a654b4f34a06, type: 2}
