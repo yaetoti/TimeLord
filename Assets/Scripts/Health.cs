@@ -28,7 +28,7 @@ public class Health : MonoBehaviour {
   void Start() {
     m_shieldUp = false;
 
-    if (tag.Equals("Player") && !DataStash.Instance.m_firstRun) {
+    if (tag.Equals("Player")) {
       m_health = DataStash.Instance.m_health;
       m_currentHealth = DataStash.Instance.m_currentHealth;
       m_isDead = DataStash.Instance.m_isDead;
@@ -44,7 +44,6 @@ public class Health : MonoBehaviour {
       DataStash.Instance.m_health = m_health;
       DataStash.Instance.m_currentHealth = m_currentHealth;
       DataStash.Instance.m_isDead = m_isDead;
-      DataStash.Instance.m_firstRun = false;
     }
   }
 
