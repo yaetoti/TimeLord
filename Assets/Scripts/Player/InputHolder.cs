@@ -3,17 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class InputHolder : MonoBehaviour {
-  public static InputHolder Instance {
-    get {
-      return m_instance;
-    }
-  }
+  public static InputHolder Instance => m_instance;
 
-  public MasterInput MasterInput {
-    get {
-      return m_masterInput;
-    }
-  }
+  public MasterInput MasterInput => m_masterInput;
 
   private static InputHolder m_instance;
 
@@ -38,8 +30,9 @@ public class InputHolder : MonoBehaviour {
   }
 
   private void Initialize() {
-    if (m_instance != null) {
+    if (m_instance is not null) {
       Destroy(this);
+      return;
     }
 
     m_instance = this;

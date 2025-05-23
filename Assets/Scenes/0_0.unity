@@ -16791,6 +16791,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameReadyPlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 2407035900450053813, guid: a8f350a87066c004092ed557ef50f986, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3373282383445901284, guid: a8f350a87066c004092ed557ef50f986, type: 3}
       propertyPath: m_arrowSpeed
       value: 50
@@ -16799,6 +16803,10 @@ PrefabInstance:
       propertyPath: m_arrowPrefab
       value: 
       objectReference: {fileID: 5794969527022868042, guid: f18b776483bf94a4ab53303cc2a1c96f, type: 3}
+    - target: {fileID: 5177032782168101362, guid: a8f350a87066c004092ed557ef50f986, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
