@@ -5,12 +5,14 @@ using UnityEngine;
 [DefaultExecutionOrder(1)]
 public class RewindableArrow : RewindableComponent {
   private sealed class TimeState {
+    public ulong frameNumber;
     public bool isAlive;
     public Vector2 position;
     public Vector2 velocity;
     public Quaternion rotation;
     
-    public TimeState(bool isAlive, Vector2 position, Vector2 velocity, Quaternion rotation) {
+    public TimeState(ulong frameNumber, bool isAlive, Vector2 position, Vector2 velocity, Quaternion rotation) {
+      this.frameNumber = frameNumber;
       this.isAlive = isAlive;
       this.position = position;
       this.velocity = velocity;
@@ -19,7 +21,7 @@ public class RewindableArrow : RewindableComponent {
   }
   
   private Rigidbody2D m_rigidbody;
-  private List<TimeState> m_snapshots;
+  private List<TimeState> m_snapshots = new List<TimeState>();
 
   private float m_rewindTime;
   private Vector2 m_lastPosition;
@@ -30,26 +32,13 @@ public class RewindableArrow : RewindableComponent {
     base.Start();
     
     m_rigidbody = GetComponent<Rigidbody2D>();
-    m_snapshots = new List<TimeState>();
-    m_framesSinceCreation = 0;
   }
 
   protected void Update() {
-    if (TimeManager.Instance.CurrentState is not TimeManager.State.WAITING) {
+    if (TimeManager.Instance.CurrentState is TimeManager.State.REWINDING) {
       m_rewindTime += Time.unscaledDeltaTime;
       transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].position, Mathf.Clamp01(m_rewindTime / 0.02f));
       transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
-    }
-  }
-
-  private void FixedUpdate() {
-    if (TimeManager.Instance.CurrentState is TimeManager.State.WAITING) {
-      ++m_framesSinceCreation;
-      if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
-        m_snapshots.RemoveAt(m_snapshots.Count - 1);
-      }
-      
-      m_snapshots.Insert(0, new TimeState(true, m_rigidbody.position, m_rigidbody.linearVelocity, transform.rotation));
     }
   }
 
@@ -70,9 +59,37 @@ public class RewindableArrow : RewindableComponent {
     m_rigidbody.simulated = true;
   }
 
+  public override void OnRewindUpdate() {
+    base.OnRewindUpdate();
+
+    if (!gameObject.activeSelf) {
+      Debug.Log("DISABLED");
+      return;
+    }
+    
+    ++m_framesSinceCreation;
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+      m_snapshots.RemoveAt(m_snapshots.Count - 1);
+    }
+      
+    m_snapshots.Insert(0, new TimeState(TimeManager.Instance.FrameNumber, true, m_rigidbody.position, m_rigidbody.linearVelocity, transform.rotation));
+  }
+
   public override void OnRewindStep(TimeManager.StepEventData data) {
     base.OnRewindStep(data);
     m_rewindTime -= 0.02f;
+
+    // No more snapshots
+    if (m_snapshots.Count == 0) {
+      return;
+    }
+
+    // Wait for the next frame
+    TimeState snapshot = m_snapshots[0];
+    if (TimeManager.Instance.FrameNumber > snapshot.frameNumber) {
+      Debug.Log($"LESS. {snapshot.frameNumber} < {TimeManager.Instance.FrameNumber}");
+      return;
+    }
 
     if (!gameObject.activeSelf && m_snapshots[0].isAlive) {
       gameObject.SetActive(true);

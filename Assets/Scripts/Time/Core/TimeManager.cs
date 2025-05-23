@@ -32,6 +32,7 @@ public class TimeManager : MonoBehaviour {
   public static TimeManager Instance { get; private set; }
 
   public State CurrentState => m_state;
+  public ulong FrameNumber => m_frameNumber;
   public int BufferSizeMax => m_bufferSizeMax;
 
   [SerializeField] [Min(0)] private int m_bufferSizeMax = 500;
@@ -39,16 +40,22 @@ public class TimeManager : MonoBehaviour {
   [SerializeField] [Min(0)] private int m_manaMax = 2000;
 
   // Events
+  private UnityEvent m_rewindUpdateEvent;
   private UnityEvent m_rewindStartEvent;
   private UnityEvent m_rewindStopEvent;
   private UnityEvent<StepEventData> m_rewindStepEvent;
   private UnityEvent<StateChangedEventData> m_stateChangedEvent;
   
+  // State
   private State m_state;
   private float m_timeSlowingProgress;
   private float m_rewindTime;
   private int m_bufferTicks;
   private int m_mana;
+
+  private bool m_zeroUpdateFired;
+  private ulong m_frameNumber;
+  private float m_frameTimer;
 
   private void Awake() {
     Initialize();
@@ -56,6 +63,7 @@ public class TimeManager : MonoBehaviour {
     m_state = State.WAITING;
     
     // Events
+    m_rewindUpdateEvent = new UnityEvent();
     m_stateChangedEvent = new UnityEvent<StateChangedEventData>();
     m_rewindStartEvent = new UnityEvent();
     m_rewindStopEvent = new UnityEvent();
@@ -100,6 +108,28 @@ public class TimeManager : MonoBehaviour {
   }
 
   private void Update() {
+    if (!m_zeroUpdateFired) {
+      m_zeroUpdateFired = true;
+      m_rewindUpdateEvent.Invoke();
+    }
+
+    // Invoke updates
+    if (m_state is not State.REWINDING) {
+      m_frameTimer += Time.unscaledDeltaTime;
+      // Next update tick
+      while (m_frameTimer >= 0.02f) {
+        m_frameTimer -= 0.02f;
+        ++m_frameNumber;
+        
+        if (m_bufferTicks < m_bufferSizeMax) {
+          ++m_bufferTicks;
+        }
+        
+        m_rewindUpdateEvent.Invoke();
+      }
+    }
+
+    
     // Processing
     switch (m_state) {
     case State.SLOWING_DOWN:
@@ -124,13 +154,27 @@ public class TimeManager : MonoBehaviour {
 
       break;
     case State.REWINDING:
+      // Invoke rollbacks
+      m_frameTimer -= Time.unscaledDeltaTime;
+      while (m_frameTimer < 0.0f) {
+        m_frameTimer += 0.02f;
+        --m_frameNumber;
+        
+        --m_bufferTicks;
+        --m_mana;
+        
+        m_rewindStepEvent.Invoke(new StepEventData());
+      }
+      
       m_rewindTime += Time.unscaledDeltaTime;
       if (m_rewindTime > 0.02f) {
         // TODO: fixedStep
         m_rewindTime -= 0.02f;
-        --m_bufferTicks;
-        --m_mana;
-        m_rewindStepEvent.Invoke(new StepEventData());
+        // --m_bufferTicks;
+        // --m_mana;
+
+        
+        //m_rewindStepEvent.Invoke(new StepEventData());
       }
 
       if (m_bufferTicks <= 0 || m_mana <= 0) {
@@ -175,9 +219,9 @@ public class TimeManager : MonoBehaviour {
 
   private void FixedUpdate() {
     // TODO NEW ??? What about step ???
-    if (m_state != State.REWINDING && m_bufferTicks < m_bufferSizeMax) {
-      ++m_bufferTicks;
-    }
+    // if (m_state != State.REWINDING && m_bufferTicks < m_bufferSizeMax) {
+    //   ++m_bufferTicks;
+    // }
   }
 
   public void Register(IRewindableComponent component) {
@@ -185,6 +229,7 @@ public class TimeManager : MonoBehaviour {
     RegisterRewindStartEvent(component.OnRewindStart);
     RegisterRewindStopEvent(component.OnRewindStop);
     RegisterRewindStepEvent(component.OnRewindStep);
+    m_rewindUpdateEvent.AddListener(component.OnRewindUpdate);
   }
 
   public void Unregister(IRewindableComponent component) {
@@ -192,6 +237,7 @@ public class TimeManager : MonoBehaviour {
     UnregisterRewindStartEvent(component.OnRewindStart);
     UnregisterRewindStopEvent(component.OnRewindStop);
     UnregisterRewindStepEvent(component.OnRewindStep);
+    m_rewindUpdateEvent.RemoveListener(component.OnRewindUpdate);
   }
   
   public void RegisterStateChangedEvent(UnityAction<StateChangedEventData> callback) {

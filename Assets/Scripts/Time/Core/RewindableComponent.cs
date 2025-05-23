@@ -20,4 +20,7 @@ public class RewindableComponent : MonoBehaviour, IRewindableComponent {
 
   public virtual void OnRewindStateChanged(TimeManager.StateChangedEventData data) {
   }
+
+  public virtual void OnRewindUpdate() {
+  }
 }

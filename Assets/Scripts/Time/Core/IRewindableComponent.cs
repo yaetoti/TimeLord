@@ -8,4 +8,5 @@ public interface IRewindableComponent {
   void OnRewindStop();
   void OnRewindStep(TimeManager.StepEventData data);
   void OnRewindStateChanged(TimeManager.StateChangedEventData data);
+  void OnRewindUpdate();
 }
