@@ -105,7 +105,7 @@ public class Health : RewindableComponent {
 
   private void Update() {
     // No updates when rewinding
-    if (TimeManager.Instance.CurrentState is not TimeManager.State.WAITING) {
+    if (TimeManager.Instance.State is not TimeManager.RewindState.WAITING) {
       return;
     }
     
@@ -200,33 +200,33 @@ public class Health : RewindableComponent {
   public override void OnRewindStateChanged(TimeManager.StateChangedEventData data) {
     base.OnRewindStateChanged(data);
 
-    if (data.CurrentState is TimeManager.State.SLOWING_DOWN) {
+    if (data.CurrentState is TimeManager.RewindState.SLOWING_DOWN) {
       // TODO ???
       //m_state = m_snapshots[0];
       return;
     }
     
-    if (data.CurrentState is TimeManager.State.WAITING) {
+    if (data.CurrentState is TimeManager.RewindState.WAITING) {
     }
   }
 
-  public override void OnRewindUpdate() {
-    base.OnRewindUpdate();
+  public override void OnRewindSave() {
+    base.OnRewindSave();
 
     if (!gameObject.activeSelf) {
       return;
     }
     
     // Add snapshots
-    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
       m_snapshots.RemoveAt(m_snapshots.Count - 1);
     }
     
     m_snapshots.Insert(0, new State(m_state.maxHealth, m_state.health, m_state.transitionTime, m_state.transitionTimeCurrent, m_state.state));
   }
 
-  public override void OnRewindStep(TimeManager.StepEventData data) {
-    base.OnRewindStep(data);
+  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+    base.OnRewindRollback(data);
 
     if (m_snapshots.Count == 0) {
       return;

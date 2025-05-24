@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class RewindableComponent : MonoBehaviour, IRewindableComponent {
+public abstract class RewindableComponent : MonoBehaviour, IRewindable {
   protected virtual void Start() {
     TimeManager.Instance.Register(this);
   }
@@ -15,12 +15,12 @@ public class RewindableComponent : MonoBehaviour, IRewindableComponent {
   public virtual void OnRewindStop() {
   }
 
-  public virtual void OnRewindStep(TimeManager.StepEventData data) {
+  public virtual void OnRewindSave() {
+  }
+
+  public virtual void OnRewindRollback(TimeManager.RollbackEventData data) {
   }
 
   public virtual void OnRewindStateChanged(TimeManager.StateChangedEventData data) {
-  }
-
-  public virtual void OnRewindUpdate() {
   }
 }

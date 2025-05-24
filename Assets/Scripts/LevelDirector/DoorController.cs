@@ -34,6 +34,8 @@ public class DoorController : MonoBehaviour {
     }
   }
   
+  public bool IsOpen => m_isOpen;
+  
   public void Close() {
     if (m_canClose) {
       m_animator.ResetTrigger(OPEN);

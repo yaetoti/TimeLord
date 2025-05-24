@@ -75,7 +75,7 @@ public class VolumeController : MonoBehaviour {
   
   private void HandleTimeManagerStateChanged(TimeManager.StateChangedEventData data) {
     // Time rewind start
-    if (data.CurrentState is TimeManager.State.SPEEDING_UP or TimeManager.State.WAITING) {
+    if (data.CurrentState is TimeManager.RewindState.SPEEDING_UP or TimeManager.RewindState.WAITING) {
       m_isGrainActive = false;
       m_isSaturationActive = true;
       m_isChromaticActive = false;
@@ -84,7 +84,7 @@ public class VolumeController : MonoBehaviour {
     }
 
     // Time rewind stop
-    if (data.CurrentState is TimeManager.State.SLOWING_DOWN or TimeManager.State.REWINDING) {
+    if (data.CurrentState is TimeManager.RewindState.SLOWING_DOWN or TimeManager.RewindState.REWINDING) {
       m_isGrainActive = true;
       m_isSaturationActive = false;
       m_isChromaticActive = true;

@@ -35,7 +35,7 @@ public class RewindableArrow : RewindableComponent {
   }
 
   protected void Update() {
-    if (TimeManager.Instance.CurrentState is TimeManager.State.REWINDING) {
+    if (TimeManager.Instance.State is TimeManager.RewindState.REWINDING) {
       m_rewindTime += Time.unscaledDeltaTime;
       transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].position, Mathf.Clamp01(m_rewindTime / 0.02f));
       transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
@@ -59,23 +59,23 @@ public class RewindableArrow : RewindableComponent {
     m_rigidbody.simulated = true;
   }
 
-  public override void OnRewindUpdate() {
-    base.OnRewindUpdate();
+  public override void OnRewindSave() {
+    base.OnRewindSave();
 
     if (!gameObject.activeSelf) {
       return;
     }
     
     ++m_framesSinceCreation;
-    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
       m_snapshots.RemoveAt(m_snapshots.Count - 1);
     }
       
     m_snapshots.Insert(0, new TimeState(TimeManager.Instance.FrameNumber, true, m_rigidbody.position, m_rigidbody.linearVelocity, transform.rotation));
   }
 
-  public override void OnRewindStep(TimeManager.StepEventData data) {
-    base.OnRewindStep(data);
+  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+    base.OnRewindRollback(data);
     m_rewindTime -= 0.02f;
 
     // No more snapshots

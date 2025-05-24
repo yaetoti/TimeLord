@@ -12,7 +12,7 @@ public class RewindableWithHealth : RewindableComponent {
   private float m_rewindTime;
   private Vector2 m_lastPosition;
   private Quaternion m_lastRotation;
-  private List<PointInTimeWithHealth> m_snapshots;
+  private List<PointInTime> m_snapshots;
 
   protected override void Start() {
     base.Start();
@@ -21,11 +21,11 @@ public class RewindableWithHealth : RewindableComponent {
   }
 
   private void OnEnable() {
-    m_snapshots = new List<PointInTimeWithHealth>();
+    m_snapshots = new List<PointInTime>();
   }
 
   protected void Update() {
-    if (TimeManager.Instance.CurrentState is not TimeManager.State.WAITING) {
+    if (TimeManager.Instance.State is not TimeManager.RewindState.WAITING) {
       if (m_snapshots.Count == 0) {
         return;
       }
@@ -38,12 +38,12 @@ public class RewindableWithHealth : RewindableComponent {
   }
 
   private void FixedUpdate() {
-    if (TimeManager.Instance.CurrentState is TimeManager.State.WAITING) {
-      if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+    if (TimeManager.Instance.State is TimeManager.RewindState.WAITING) {
+      if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
         m_snapshots.RemoveAt(m_snapshots.Count - 1);
       }
 
-      m_snapshots.Insert(0, new PointInTimeWithHealth(transform.position, m_rigidbody.linearVelocity, transform.rotation, m_health.CurrentState.health));
+      m_snapshots.Insert(0, new PointInTime(transform.position, m_rigidbody.linearVelocity, transform.rotation));
     }
   }
 
@@ -65,8 +65,8 @@ public class RewindableWithHealth : RewindableComponent {
     m_rigidbody.simulated = true;
   }
 
-  public override void OnRewindStep(TimeManager.StepEventData data) {
-    base.OnRewindStep(data);
+  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+    base.OnRewindRollback(data);
     
     if (m_snapshots.Count == 0) {
       return;
@@ -85,11 +85,11 @@ public class RewindableWithHealth : RewindableComponent {
     m_lastPosition = m_snapshots[0].Position;
     m_lastRotation = m_snapshots[0].Rotation;
     
-    if (tag.Equals("Entity") && m_health.CurrentState.health <= 0 && m_snapshots[0].Health > 0) {
-      GetComponent<Animator>().SetTrigger("Res");
-    }
+    // TODO FIX
+    //if (tag.Equals("Entity") && m_health.CurrentState.health <= 0 && m_snapshots[0].Health > 0) {
+    //  GetComponent<Animator>().SetTrigger("Res");
+    //}
 
-    m_health.SetHealth(m_snapshots[0].Health);
     m_snapshots.RemoveAt(0);
   }
 }

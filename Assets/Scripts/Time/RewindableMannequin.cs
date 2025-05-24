@@ -11,7 +11,7 @@ public class RewindableMannequin : RewindableComponent {
   private Animator m_animator;
   
   // State
-  private List<PointInTimeWithHealth> m_snapshots = new List<PointInTimeWithHealth>();
+  private List<PointInTime> m_snapshots = new();
   private Health.TransitionState m_nextHealthState;
   private Health.TransitionState m_healthState;
 
@@ -42,22 +42,22 @@ public class RewindableMannequin : RewindableComponent {
     m_animator.updateMode = AnimatorUpdateMode.Normal;
   }
 
-  public override void OnRewindUpdate() {
-    base.OnRewindUpdate();
+  public override void OnRewindSave() {
+    base.OnRewindSave();
     
     if (!gameObject.activeSelf) {
       return;
     }
     
-    if (m_snapshots.Count > TimeManager.Instance.BufferSizeMax) {
+    if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
       m_snapshots.RemoveAt(m_snapshots.Count - 1);
     }
 
-    m_snapshots.Insert(0, new PointInTimeWithHealth(transform.position, new Vector2(0, 0), transform.rotation, m_health.CurrentState.health));
+    m_snapshots.Insert(0, new PointInTime(transform.position, new Vector2(0, 0), transform.rotation));
   }
   
-  public override void OnRewindStep(TimeManager.StepEventData data) {
-    base.OnRewindStep(data);
+  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+    base.OnRewindRollback(data);
     
     if (m_snapshots.Count == 0) {
       return;

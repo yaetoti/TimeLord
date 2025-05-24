@@ -2,8 +2,8 @@
 using UnityEngine;
 
 public class RewindableTest : RewindableComponent {
-  public override void OnRewindStep(TimeManager.StepEventData data) {
-    base.OnRewindStep(data);
+  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+    base.OnRewindRollback(data);
     Debug.Log("Step");
   }
 }
