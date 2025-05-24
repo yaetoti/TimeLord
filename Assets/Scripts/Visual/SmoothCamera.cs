@@ -84,12 +84,12 @@ public class SmoothCamera : MonoBehaviour {
       return;
     }
 
-    // Draw inner boundary
-    Gizmos.color = Color.green;
+    // Inner boundary
+    Gizmos.color = Color.red;
     Gizmos.DrawWireCube(m_targetRigidbody.position + m_targetRigidbody.linearVelocity, new Vector3(m_innerDeltaX * 2, m_innerDeltaY * 2, 0));
 
-    // Draw outer boundary
-    Gizmos.color = Color.red;
+    // Outer boundary
+    Gizmos.color = Color.cyan;
     Gizmos.DrawWireCube(m_targetRigidbody.position + m_targetRigidbody.linearVelocity, new Vector3(m_outerDeltaX * 2, m_outerDeltaY * 2, 0));
   }
 }
