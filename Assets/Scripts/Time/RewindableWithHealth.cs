@@ -6,7 +6,6 @@ using UnityEngine;
 public class RewindableWithHealth : RewindableComponent {
   // Components
   private Rigidbody2D m_rigidbody;
-  private Health m_health;
 
   // State
   private float m_rewindTime;
@@ -16,16 +15,12 @@ public class RewindableWithHealth : RewindableComponent {
 
   protected override void Start() {
     base.Start();
-    m_rigidbody = GetComponent<Rigidbody2D>();
-    m_health = GetComponent<Health>();
-  }
-
-  private void OnEnable() {
     m_snapshots = new List<PointInTime>();
+    m_rigidbody = GetComponent<Rigidbody2D>();
   }
 
   protected void Update() {
-    if (TimeManager.Instance.State is not TimeManager.RewindState.WAITING) {
+    if (RewindManager.Instance.State is RewindManager.RewindState.REWINDING) {
       if (m_snapshots.Count == 0) {
         return;
       }
@@ -34,16 +29,6 @@ public class RewindableWithHealth : RewindableComponent {
       m_rewindTime += Time.unscaledDeltaTime;
       transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].Position, Mathf.Clamp01(m_rewindTime / 0.02f));
       transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].Rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
-    }
-  }
-
-  private void FixedUpdate() {
-    if (TimeManager.Instance.State is TimeManager.RewindState.WAITING) {
-      if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
-        m_snapshots.RemoveAt(m_snapshots.Count - 1);
-      }
-
-      m_snapshots.Insert(0, new PointInTime(transform.position, m_rigidbody.linearVelocity, transform.rotation));
     }
   }
 
@@ -65,7 +50,17 @@ public class RewindableWithHealth : RewindableComponent {
     m_rigidbody.simulated = true;
   }
 
-  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+  public override void OnRewindSave() {
+    base.OnRewindSave();
+    
+    if (m_snapshots.Count > RewindManager.Instance.BufferSizeLimit) {
+      m_snapshots.RemoveAt(m_snapshots.Count - 1);
+    }
+
+    m_snapshots.Insert(0, new PointInTime(transform.position, m_rigidbody.linearVelocity, transform.rotation));
+  }
+
+  public override void OnRewindRollback(RewindManager.RollbackEventData data) {
     base.OnRewindRollback(data);
     
     if (m_snapshots.Count == 0) {

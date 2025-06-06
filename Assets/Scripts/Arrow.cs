@@ -25,13 +25,22 @@ public class Arrow : MonoBehaviour {
   }
 
   private void OnCollisionEnter2D(Collision2D collision) {
+    if (RewindManager.Instance.State == RewindManager.RewindState.REWINDING) {
+      return;
+    }
+    
     print(m_rigidbody.rotation);
     m_rigidbody.simulated = false;
   }
 
   private void OnTriggerEnter2D(Collider2D other) {
+    if (RewindManager.Instance.State == RewindManager.RewindState.REWINDING) {
+      return;
+    }
+    
     if (other.gameObject.TryGetComponent(out Health health)) {
       health.ReduceHealth(m_damage);
+      Debug.Log("Arrow Destroyed at: " + RewindManager.Instance.FrameNumber);
       gameObject.SetActive(false);
       //Destroy(gameObject);
     }

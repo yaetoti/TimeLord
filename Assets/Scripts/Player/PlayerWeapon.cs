@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 
 public class PlayerWeapon : MonoBehaviour {
+  private static readonly int KNIFE = Animator.StringToHash("Knife");
+  private static readonly int CROSSBOW = Animator.StringToHash("Crossbow");
+
   [SerializeField]
   private GameObject m_arrowPrefab;
   [SerializeField]
@@ -72,7 +75,7 @@ public class PlayerWeapon : MonoBehaviour {
       if (m_weaponType == WeaponType.KNIFE && m_meleeReloadCurrent == 0) {
         m_meleeReloadCurrent = m_meleeReload;
         //Animation script
-        m_animator.SetTrigger("KnifeHit");
+        m_animator.SetTrigger(KNIFE);
 
         Vector2 offset = new Vector2(m_isFacingRight ? m_meleeOffsetX : -m_meleeOffsetX, m_meleeOffsetY);
         Collider2D[] enemies = Physics2D.OverlapCircleAll(m_entityRigidbody.position + offset, m_meleeRadius, 1 << LayerMask.NameToLayer("Enemy"));
@@ -81,7 +84,7 @@ public class PlayerWeapon : MonoBehaviour {
         }
       } else if (m_weaponType == WeaponType.CROSSBOW && m_crossbowReloadCurrent == 0) {
         //Animation script
-        m_animator.SetTrigger("BowShot");
+        m_animator.SetTrigger(CROSSBOW);
         //Delay for Animation of crossbow
         m_crossbowReloadCurrent = m_crossbowReload;
         StartCoroutine(BowShot());

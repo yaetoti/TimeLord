@@ -2,11 +2,11 @@
 
 public abstract class RewindableComponent : MonoBehaviour, IRewindable {
   protected virtual void Start() {
-    TimeManager.Instance.Register(this);
+    RewindManager.Instance.Register(this);
   }
 
   protected virtual void OnDestroy() {
-    TimeManager.Instance?.Unregister(this);
+    RewindManager.Instance?.Unregister(this);
   }
 
   public virtual void OnRewindStart() {
@@ -18,9 +18,9 @@ public abstract class RewindableComponent : MonoBehaviour, IRewindable {
   public virtual void OnRewindSave() {
   }
 
-  public virtual void OnRewindRollback(TimeManager.RollbackEventData data) {
+  public virtual void OnRewindRollback(RewindManager.RollbackEventData data) {
   }
 
-  public virtual void OnRewindStateChanged(TimeManager.StateChangedEventData data) {
+  public virtual void OnRewindStateChanged(RewindManager.StateChangedEventData data) {
   }
 }

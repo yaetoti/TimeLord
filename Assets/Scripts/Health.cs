@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -35,6 +36,23 @@ public class Health : RewindableComponent {
     public override string ToString() {
       return $"State[maxHealth={maxHealth}, health={health}, transitionTime={transitionTime}, transitionTimeCurrent={transitionTimeCurrent}, state={state}]";
     }
+    
+    public State Clone() {
+      return new State(maxHealth, health, transitionTime, transitionTimeCurrent, state);
+    }
+  }
+  
+  [SerializeField]
+  private bool m_disableOnDeath = true;
+  
+  public sealed class TimeState {
+    public ulong frameNumber;
+    public State state;
+
+    public TimeState(ulong frameNumber, State state) {
+      this.frameNumber = frameNumber;
+      this.state = state;
+    }
   }
 
   // TODO interpolator
@@ -65,11 +83,11 @@ public class Health : RewindableComponent {
 
   // State
   private UnityEvent<StateChangedEventData> m_healthStateChangedEvent;
-  private List<State> m_snapshots;
+  private List<TimeState> m_snapshots;
 
   private void Awake() {
     m_healthStateChangedEvent = new UnityEvent<StateChangedEventData>();
-    m_snapshots = new List<State>();
+    m_snapshots = new List<TimeState>();
   }
 
   protected override void Start() {
@@ -105,7 +123,7 @@ public class Health : RewindableComponent {
 
   private void Update() {
     // No updates when rewinding
-    if (TimeManager.Instance.State is not TimeManager.RewindState.WAITING) {
+    if (RewindManager.Instance.State is RewindManager.RewindState.REWINDING) {
       return;
     }
     
@@ -113,15 +131,11 @@ public class Health : RewindableComponent {
       m_state.transitionTimeCurrent += Time.deltaTime;
       if (m_state.transitionTimeCurrent >= m_state.transitionTime) {
         if (m_state.state == TransitionState.RESURRECTING) {
-          Debug.Log(m_state);
           SwitchTransitionState(TransitionState.IDLE);
-          Debug.Log(m_state);
         }
 
         if (m_state.state == TransitionState.DYING) {
-          Debug.Log(m_state);
           SwitchTransitionState(TransitionState.DEAD);
-          Debug.Log(m_state);
         }
       }
     }
@@ -169,7 +183,7 @@ public class Health : RewindableComponent {
     if (m_state.state is TransitionState.DEAD or TransitionState.DYING) {
       return;
     }
-
+    
     SwitchTransitionState(TransitionState.DYING);
     
     // Notify director
@@ -182,10 +196,30 @@ public class Health : RewindableComponent {
   }
 
   private void SwitchTransitionState(TransitionState state) {
+    // TODO hotfix, remove
+    if (m_state.state != TransitionState.DEAD && state == TransitionState.DEAD) {
+      Debug.Log("Health destroyed at " + RewindManager.Instance.FrameNumber);
+      
+      if (m_disableOnDeath) {
+        gameObject.SetActive(false);
+      }
+    }
+    
     TransitionState previousState = m_state.state;
     m_state.state = state;
     m_state.transitionTimeCurrent = 0.0f;
     m_healthStateChangedEvent.Invoke(new StateChangedEventData(previousState, state));
+    
+    // TODO factor out
+    if (m_state.transitionTimeCurrent >= m_state.transitionTime) {
+      if (m_state.state == TransitionState.RESURRECTING) {
+        SwitchTransitionState(TransitionState.IDLE);
+      }
+
+      if (m_state.state == TransitionState.DYING) {
+        SwitchTransitionState(TransitionState.DEAD);
+      }
+    }
   }
   
   // Coroutines
@@ -197,16 +231,16 @@ public class Health : RewindableComponent {
     Destroy(system);
   }
   
-  public override void OnRewindStateChanged(TimeManager.StateChangedEventData data) {
+  public override void OnRewindStateChanged(RewindManager.StateChangedEventData data) {
     base.OnRewindStateChanged(data);
 
-    if (data.CurrentState is TimeManager.RewindState.SLOWING_DOWN) {
+    if (data.CurrentState is RewindManager.RewindState.SLOWING_DOWN) {
       // TODO ???
       //m_state = m_snapshots[0];
       return;
     }
     
-    if (data.CurrentState is TimeManager.RewindState.WAITING) {
+    if (data.CurrentState is RewindManager.RewindState.WAITING) {
     }
   }
 
@@ -218,21 +252,35 @@ public class Health : RewindableComponent {
     }
     
     // Add snapshots
-    if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
+    if (m_snapshots.Count > RewindManager.Instance.BufferSizeLimit) {
       m_snapshots.RemoveAt(m_snapshots.Count - 1);
     }
+
     
-    m_snapshots.Insert(0, new State(m_state.maxHealth, m_state.health, m_state.transitionTime, m_state.transitionTimeCurrent, m_state.state));
+    m_snapshots.Insert(0, new TimeState(RewindManager.Instance.FrameNumber, m_state.Clone()));
   }
 
-  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+  public override void OnRewindRollback(RewindManager.RollbackEventData data) {
     base.OnRewindRollback(data);
 
     if (m_snapshots.Count == 0) {
       return;
     }
+
+    if (RewindManager.Instance.FrameNumber > m_snapshots[0].frameNumber) {
+      //Debug.Log($"HEALTH LESS. {m_snapshots[0].frameNumber} < {RewindManager.Instance.FrameNumber}");
+      return;
+    }
+
+    // TODO hotfix, remove
+    if (m_state.state == TransitionState.DEAD && m_snapshots[0].state.state != TransitionState.DEAD) {
+      //Debug.Log("Health resurrected at: " + RewindManager.Instance.FrameNumber);
+      if (m_disableOnDeath) {
+        gameObject.SetActive(true);
+      }
+    }
     
-    m_state = m_snapshots[0];
+    m_state = m_snapshots[0].state;
     m_snapshots.RemoveAt(0);
   }
   

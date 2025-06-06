@@ -2,6 +2,6 @@ public interface IRewindable {
   void OnRewindStart();
   void OnRewindStop();
   void OnRewindSave();
-  void OnRewindRollback(TimeManager.RollbackEventData data);
-  void OnRewindStateChanged(TimeManager.StateChangedEventData data);
+  void OnRewindRollback(RewindManager.RollbackEventData data);
+  void OnRewindStateChanged(RewindManager.StateChangedEventData data);
 }
