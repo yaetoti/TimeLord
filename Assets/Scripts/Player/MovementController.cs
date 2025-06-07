@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MovementController : MonoBehaviour {
+  private Animator m_animator;
     private Rigidbody2D m_rigidbody;
 
     [SerializeField]
@@ -31,7 +32,7 @@ public class MovementController : MonoBehaviour {
     private bool m_isPlayerAlive;
 
     //Animation variables
-    private Material m_playerMat;
+    //private Material m_playerMat;
 
     private float m_wishDir = 0.0f;
     private bool m_desireToJump = false;
@@ -43,39 +44,46 @@ public class MovementController : MonoBehaviour {
     private List<Vector2> m_groundNormals;
     private static readonly int Speed = Shader.PropertyToID("_Speed");
     private static readonly int Flip = Shader.PropertyToID("_flip");
+    
+    private static readonly int RUN = Animator.StringToHash("Run");
+    private static readonly int KNIFE = Animator.StringToHash("Knife");
+    private static readonly int CROSSBOW = Animator.StringToHash("Crossbow");
 
     void Start() {
+      m_animator = transform.GetChild(0).gameObject.GetComponent<Animator>();
         m_rigidbody = GetComponent<Rigidbody2D>();
         m_groundNormals = new List<Vector2>();
 
         m_isPlayerAlive = true;
 
-        m_playerMat = transform.GetChild(0).GetComponent<SpriteRenderer>().material;
+        //m_playerMat = transform.GetChild(0).GetComponent<SpriteRenderer>().material;
     }
 
     void Update() {
-        if (m_isPlayerAlive) {
+      if (m_isPlayerAlive) {
+        m_wishDir = InputHolder.Instance.MasterInput.Player.Movement.ReadValue<float>();
 
-            m_wishDir = InputHolder.Instance.MasterInput.Player.Movement.ReadValue<float>();
-
-            //Player animation controller
-            if (m_wishDir != 0) {
-                m_playerMat.SetFloat(Flip, (m_wishDir > 0) ? 0 : 1);
-                m_playerMat.SetFloat(Speed, 30);
-            }
-            else {
-                m_playerMat.SetFloat(Speed, 5);
-            }
-
-            if (InputHolder.Instance.MasterInput.Player.Jump.WasPressedThisFrame()) {
-                m_desireToJump = true;
-                m_jumpCacheTimeCurrent = m_jumpCacheTime;
-            }
+        //Player animation controller
+        if (m_wishDir != 0) {
+          m_animator.SetBool(RUN, true);
+          m_animator.gameObject.transform.localScale = new Vector3(m_wishDir, 1.0f, 1.0f);
+          //m_playerMat.SetFloat(Flip, (m_wishDir > 0) ? 0 : 1);
+          //m_playerMat.SetFloat(Speed, 30);
         }
+        else {
+          m_animator.SetBool(RUN, false);
+          //m_playerMat.SetFloat(Speed, 5);
+        }
+
+        if (InputHolder.Instance.MasterInput.Player.Jump.WasPressedThisFrame()) {
+          m_desireToJump = true;
+          m_jumpCacheTimeCurrent = m_jumpCacheTime;
+        }
+      }
     }
 
     public void Die() {
-        m_playerMat.SetFloat(Speed, 30);
+        //m_playerMat.SetFloat(Speed, 30);
         m_isPlayerAlive = false;
         m_wishDir = 0;
     }

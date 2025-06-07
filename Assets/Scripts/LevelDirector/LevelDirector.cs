@@ -60,7 +60,7 @@ public class LevelDirector : MonoBehaviour {
     //m_volume.SwitchActive();
     // Pre-load
     InputHolder.Instance.MasterInput.Disable();
-    TimeManager.Instance.ForceResetRewind();
+    RewindManager.Instance.ForceResetRewind();
     
     // Load
     yield return new WaitForSeconds(0.3f);

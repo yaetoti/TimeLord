@@ -7,11 +7,12 @@ public class RewindableArrow : RewindableComponent {
   private sealed class TimeState {
     public ulong frameNumber;
     public bool isAlive;
+    public bool isSimulated;
     public Vector2 position;
     public Vector2 velocity;
     public Quaternion rotation;
     
-    public TimeState(ulong frameNumber, bool isAlive, Vector2 position, Vector2 velocity, Quaternion rotation) {
+    public TimeState(ulong frameNumber, bool isAlive, bool isSimulated, Vector2 position, Vector2 velocity, Quaternion rotation) {
       this.frameNumber = frameNumber;
       this.isAlive = isAlive;
       this.position = position;
@@ -27,19 +28,23 @@ public class RewindableArrow : RewindableComponent {
   private Vector2 m_lastPosition;
   private Quaternion m_lastRotation;
   private int m_framesSinceCreation;
+  private bool m_isSimulated;
 
   protected override void Start() {
     base.Start();
     
     m_rigidbody = GetComponent<Rigidbody2D>();
+    m_isSimulated = m_rigidbody.simulated;
   }
 
   protected void Update() {
-    if (TimeManager.Instance.State is TimeManager.RewindState.REWINDING) {
+    if (RewindManager.Instance.State is RewindManager.RewindState.REWINDING) {
       m_rewindTime += Time.unscaledDeltaTime;
       transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].position, Mathf.Clamp01(m_rewindTime / 0.02f));
       transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
     }
+    
+    m_isSimulated = m_rigidbody.simulated;
   }
 
   public override void OnRewindStart() {
@@ -56,7 +61,7 @@ public class RewindableArrow : RewindableComponent {
     base.OnRewindStop();
     m_rigidbody.linearVelocity = -m_rigidbody.linearVelocity; // TODO ???
     m_rigidbody.bodyType = RigidbodyType2D.Dynamic;
-    m_rigidbody.simulated = true;
+    m_rigidbody.simulated = m_isSimulated;
   }
 
   public override void OnRewindSave() {
@@ -67,14 +72,14 @@ public class RewindableArrow : RewindableComponent {
     }
     
     ++m_framesSinceCreation;
-    if (m_snapshots.Count > TimeManager.Instance.BufferSizeLimit) {
+    if (m_snapshots.Count > RewindManager.Instance.BufferSizeLimit) {
       m_snapshots.RemoveAt(m_snapshots.Count - 1);
     }
-      
-    m_snapshots.Insert(0, new TimeState(TimeManager.Instance.FrameNumber, true, m_rigidbody.position, m_rigidbody.linearVelocity, transform.rotation));
+    
+    m_snapshots.Insert(0, new TimeState(RewindManager.Instance.FrameNumber, true, m_rigidbody.simulated, m_rigidbody.position, m_rigidbody.linearVelocity, transform.rotation));
   }
 
-  public override void OnRewindRollback(TimeManager.RollbackEventData data) {
+  public override void OnRewindRollback(RewindManager.RollbackEventData data) {
     base.OnRewindRollback(data);
     m_rewindTime -= 0.02f;
 
@@ -85,13 +90,9 @@ public class RewindableArrow : RewindableComponent {
 
     // Wait for the next frame
     TimeState snapshot = m_snapshots[0];
-    if (TimeManager.Instance.FrameNumber > snapshot.frameNumber) {
-      Debug.Log($"LESS. {snapshot.frameNumber} < {TimeManager.Instance.FrameNumber}");
+    if (RewindManager.Instance.FrameNumber > snapshot.frameNumber) {
+      Debug.Log($"LESS. {snapshot.frameNumber} < {RewindManager.Instance.FrameNumber}");
       return;
-    }
-
-    if (!gameObject.activeSelf && m_snapshots[0].isAlive) {
-      gameObject.SetActive(true);
     }
     
     transform.position = m_snapshots[0].position;
@@ -99,6 +100,12 @@ public class RewindableArrow : RewindableComponent {
     m_rigidbody.position = m_snapshots[0].position;
     m_lastPosition = m_snapshots[0].position;
     m_lastRotation = m_snapshots[0].rotation;
+    m_isSimulated = m_snapshots[0].isSimulated;
+    
+    if (!gameObject.activeSelf && m_snapshots[0].isAlive) {
+      gameObject.SetActive(true);
+      Debug.Log("Arrow resurrected at: " + RewindManager.Instance.FrameNumber);
+    }
     
     m_snapshots.RemoveAt(0);
     --m_framesSinceCreation;

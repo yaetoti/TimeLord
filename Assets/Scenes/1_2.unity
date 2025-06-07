@@ -16016,6 +16016,10 @@ PrefabInstance:
       propertyPath: LinkedLevel
       value: 1_3
       objectReference: {fileID: 0}
+    - target: {fileID: 8651323943376080631, guid: 69c061491dbc2d1489279ac8cad16e4b, type: 3}
+      propertyPath: m_linkedLevel
+      value: 1_3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

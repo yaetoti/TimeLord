@@ -33,7 +33,7 @@ public class VolumeController : MonoBehaviour {
 
   void Start() {
     // Register
-    TimeManager.Instance.RegisterStateChangedEvent(HandleTimeManagerStateChanged);
+    RewindManager.Instance.RegisterStateChangedEvent(HandleTimeManagerStateChanged);
     
     // Init components
     m_volume = GetComponent<Volume>();
@@ -50,7 +50,7 @@ public class VolumeController : MonoBehaviour {
   }
 
   private void OnDestroy() {
-    TimeManager.Instance?.UnregisterStateChangedEvent(HandleTimeManagerStateChanged);
+    RewindManager.Instance?.UnregisterStateChangedEvent(HandleTimeManagerStateChanged);
   }
 
   private void Update() {
@@ -73,9 +73,9 @@ public class VolumeController : MonoBehaviour {
     m_material.SetFloat(TEXTURE_LERP, newShaderScale);
   }
   
-  private void HandleTimeManagerStateChanged(TimeManager.StateChangedEventData data) {
+  private void HandleTimeManagerStateChanged(RewindManager.StateChangedEventData data) {
     // Time rewind start
-    if (data.CurrentState is TimeManager.RewindState.SPEEDING_UP or TimeManager.RewindState.WAITING) {
+    if (data.CurrentState is RewindManager.RewindState.SPEEDING_UP or RewindManager.RewindState.WAITING) {
       m_isGrainActive = false;
       m_isSaturationActive = true;
       m_isChromaticActive = false;
@@ -84,7 +84,7 @@ public class VolumeController : MonoBehaviour {
     }
 
     // Time rewind stop
-    if (data.CurrentState is TimeManager.RewindState.SLOWING_DOWN or TimeManager.RewindState.REWINDING) {
+    if (data.CurrentState is RewindManager.RewindState.SLOWING_DOWN or RewindManager.RewindState.REWINDING) {
       m_isGrainActive = true;
       m_isSaturationActive = false;
       m_isChromaticActive = true;
