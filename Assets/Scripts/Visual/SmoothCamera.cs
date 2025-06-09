@@ -73,8 +73,8 @@ public class SmoothCamera : MonoBehaviour {
       //   Mathf.SmoothDamp(m_cameraPos.position.y, m_targetRigidbody.position.y + m_targetRigidbody.linearVelocity.y, ref m_yVelocity, m_time, Mathf.Infinity, Time.unscaledDeltaTime),
       //   m_cameraPos.position.z);
       m_cameraPos.position = new Vector3(
-        MathUtils.SmoothDampOvershoot(m_cameraPos.position.x, m_targetRigidbody.position.x + m_targetRigidbody.linearVelocity.x + targetDelta2D.x * m_cursorPredictionModifier, ref m_xVelocity, m_time, Mathf.Infinity, Time.unscaledDeltaTime),
-        MathUtils.SmoothDampOvershoot(m_cameraPos.position.y, m_targetRigidbody.position.y + m_targetRigidbody.linearVelocity.y + targetDelta2D.y * m_cursorPredictionModifier, ref m_yVelocity, m_time, Mathf.Infinity, Time.unscaledDeltaTime),
+        MathUtils.SmoothDampOvershoot(m_cameraPos.position.x, m_targetRigidbody.position.x + m_targetRigidbody.linearVelocity.x * m_predictionModifier + targetDelta2D.x * m_cursorPredictionModifier, ref m_xVelocity, m_time, Mathf.Infinity, Time.unscaledDeltaTime),
+        MathUtils.SmoothDampOvershoot(m_cameraPos.position.y, m_targetRigidbody.position.y + m_targetRigidbody.linearVelocity.y * m_predictionModifier + targetDelta2D.y * m_cursorPredictionModifier, ref m_yVelocity, m_time, Mathf.Infinity, Time.unscaledDeltaTime),
         m_cameraPos.position.z);
     }
   }

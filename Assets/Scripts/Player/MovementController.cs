@@ -28,11 +28,8 @@ public class MovementController : MonoBehaviour {
     [Min(0)]
     private int m_coyoteTime = 0;
 
-    //DeathChecker
-    private bool m_isPlayerAlive;
-
-    //Animation variables
-    //private Material m_playerMat;
+    // DeathChecker
+    private bool m_isControllerEnabled;
 
     private float m_wishDir = 0.0f;
     private bool m_desireToJump = false;
@@ -41,9 +38,7 @@ public class MovementController : MonoBehaviour {
     private bool m_firstJumpPerformed = false;
     private int m_jumpsLeft = 0;
     private int m_coyoteTimeCurrent = 0;
-    private List<Vector2> m_groundNormals;
-    private static readonly int Speed = Shader.PropertyToID("_Speed");
-    private static readonly int Flip = Shader.PropertyToID("_flip");
+    private List<Vector2> m_collisionNormals;
     
     private static readonly int RUN = Animator.StringToHash("Run");
     private static readonly int KNIFE = Animator.StringToHash("Knife");
@@ -52,27 +47,22 @@ public class MovementController : MonoBehaviour {
     void Start() {
       m_animator = transform.GetChild(0).gameObject.GetComponent<Animator>();
         m_rigidbody = GetComponent<Rigidbody2D>();
-        m_groundNormals = new List<Vector2>();
+        m_collisionNormals = new List<Vector2>();
 
-        m_isPlayerAlive = true;
-
-        //m_playerMat = transform.GetChild(0).GetComponent<SpriteRenderer>().material;
+        m_isControllerEnabled = true;
     }
 
     void Update() {
-      if (m_isPlayerAlive) {
+      if (m_isControllerEnabled) {
         m_wishDir = InputHolder.Instance.MasterInput.Player.Movement.ReadValue<float>();
 
-        //Player animation controller
+        // Player animation controller
         if (m_wishDir != 0) {
           m_animator.SetBool(RUN, true);
           m_animator.gameObject.transform.localScale = new Vector3(m_wishDir, 1.0f, 1.0f);
-          //m_playerMat.SetFloat(Flip, (m_wishDir > 0) ? 0 : 1);
-          //m_playerMat.SetFloat(Speed, 30);
         }
         else {
           m_animator.SetBool(RUN, false);
-          //m_playerMat.SetFloat(Speed, 5);
         }
 
         if (InputHolder.Instance.MasterInput.Player.Jump.WasPressedThisFrame()) {
@@ -82,9 +72,8 @@ public class MovementController : MonoBehaviour {
       }
     }
 
-    public void Die() {
-        //m_playerMat.SetFloat(Speed, 30);
-        m_isPlayerAlive = false;
+    public void DisableController() {
+        m_isControllerEnabled = false;
         m_wishDir = 0;
     }
 
@@ -95,12 +84,12 @@ public class MovementController : MonoBehaviour {
         // Normals processing
         {
             var coordY = float.MinValue;
-            for (int i = 0; i < m_groundNormals.Count; ++i) {
-                if (Vector2.Angle(Vector2.up, m_groundNormals[i]) <= m_groundAngle) {
+            for (int i = 0; i < m_collisionNormals.Count; ++i) {
+                if (Vector2.Angle(Vector2.up, m_collisionNormals[i]) <= m_groundAngle) {
                     ++groundNormals;
                     var moveVector = m_wishDir > 0
-                      ? new Vector2(m_groundNormals[i].y, -m_groundNormals[i].x) // Rotate by 90
-                      : new Vector2(-m_groundNormals[i].y, m_groundNormals[i].x); // Rotate by -90
+                      ? new Vector2(m_collisionNormals[i].y, -m_collisionNormals[i].x) // Rotate by 90
+                      : new Vector2(-m_collisionNormals[i].y, m_collisionNormals[i].x); // Rotate by -90
                     if (m_wishDir != 0 && moveVector.y > coordY) {
                         coordY = moveVector.y;
                         steepestForward = moveVector;
@@ -169,7 +158,7 @@ public class MovementController : MonoBehaviour {
                 m_desireToJump = false;
             }
         }
-        m_groundNormals.Clear();
+        m_collisionNormals.Clear();
     }
 
     private void OnCollisionStay2D(Collision2D collision) {
@@ -177,7 +166,7 @@ public class MovementController : MonoBehaviour {
         collision.GetContacts(contacts);
 
         foreach (var contact in contacts) {
-            m_groundNormals.Add(contact.normal);
+            m_collisionNormals.Add(contact.normal);
         }
     }
 }

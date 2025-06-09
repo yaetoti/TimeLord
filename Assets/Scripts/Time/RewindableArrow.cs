@@ -40,6 +40,10 @@ public class RewindableArrow : RewindableComponent {
   protected void Update() {
     if (RewindManager.Instance.State is RewindManager.RewindState.REWINDING) {
       m_rewindTime += Time.unscaledDeltaTime;
+      if (m_snapshots.Count == 0) {
+        return;
+      }
+      
       transform.position = Vector2.Lerp(m_lastPosition, m_snapshots[0].position, Mathf.Clamp01(m_rewindTime / 0.02f));
       transform.rotation = Quaternion.Lerp(m_lastRotation, m_snapshots[0].rotation, Mathf.Clamp01(m_rewindTime / 0.02f));
     }
@@ -53,6 +57,11 @@ public class RewindableArrow : RewindableComponent {
     m_rigidbody.simulated = false;
 
     m_rewindTime = 0f;
+    if (m_snapshots.Count == 0) {
+      return;
+    }
+
+    // TODO Strange things. snapshots count == 0, but arrow should have died at that point (or not, wait a second)
     m_lastPosition = m_snapshots[0].position;
     m_lastRotation = m_snapshots[0].rotation;
   }

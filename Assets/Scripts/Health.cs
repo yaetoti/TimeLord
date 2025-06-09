@@ -190,7 +190,7 @@ public class Health : RewindableComponent {
     // TODO move
     LevelDirector.Instance.IAmDead(transform.tag);
     if (tag.Equals("Player")) {
-      GetComponent<MovementController>().Die();
+      GetComponent<MovementController>().DisableController();
       return;
     }
   }
