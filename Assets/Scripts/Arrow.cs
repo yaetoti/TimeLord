@@ -11,7 +11,7 @@ public class Arrow : MonoBehaviour {
   private Vector3 m_lastVelocity;
 
   private void Awake() {
-    Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Projectile"), LayerMask.NameToLayer("Projectile"));
+    //Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Projectile"), LayerMask.NameToLayer("Projectile"));
   }
 
   void Start() {
@@ -25,6 +25,10 @@ public class Arrow : MonoBehaviour {
   }
 
   private void OnCollisionEnter2D(Collision2D collision) {
+    if (!collision.enabled) {
+      return;
+    }
+    
     if (RewindManager.Instance.State == RewindManager.RewindState.REWINDING) {
       return;
     }
